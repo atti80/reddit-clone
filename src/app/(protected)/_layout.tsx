@@ -4,7 +4,9 @@ import { View } from 'react-native'
 import { AntDesign, MaterialIcons, Entypo } from '@expo/vector-icons'
 
 export default function AppLayout() {
-    const { isSignedIn } = useAuth()
+    const { isSignedIn, isLoaded } = useAuth()
+
+    if (!isLoaded) return null;
 
     if (!isSignedIn) {
         return <Redirect href={'/signIn'} />
