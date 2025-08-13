@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useLocalSearchParams } from "expo-router";
 import { Image, ScrollView, Text, View, TextInput, Pressable, KeyboardAvoidingView, Platform, FlatList } from "react-native";
 import posts from '../../../../assets/data/posts.json';
@@ -17,15 +17,19 @@ export default function PostDetailed() {
 
     const [comment, setComment] = useState<string>('')
     const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
+    const [replyToId, setReplyToId] = useState<string | null>(null);
+
+    const inputRef = useRef<TextInput | null>(null);
 
     const detailedPost = posts.find((post) => post.id === id)
     const postComments = comments.filter(
         (comment) => comment.post_id === detailedPost?.id
     );
 
-    const handleReplyButtonPressed = (commentId: string) => {
-        console.log(commentId);
-    };
+    const handleReplyButtonPressed = useCallback((commentId: string) => {
+        setReplyToId(commentId);
+        inputRef.current?.focus();
+    }, []);
 
     if (!detailedPost) {
         return <Text>Post Not Found!</Text>;
@@ -55,6 +59,7 @@ export default function PostDetailed() {
                 elevation: 4,
             }}>
                 <TextInput
+                    ref={inputRef}
                     placeholder="Join the conversation"
                     value={comment}
                     onChangeText={(text) => setComment(text)}
