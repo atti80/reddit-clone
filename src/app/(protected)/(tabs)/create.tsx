@@ -48,7 +48,6 @@ export default function CreateScreen() {
                     description: bodyText,
                     group_id: group.id,
                     image,
-                    user_id: '35609419-fb15-47ce-9d52-818de51d082b'
                 },
                 supabase
             );

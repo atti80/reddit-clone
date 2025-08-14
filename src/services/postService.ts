@@ -9,7 +9,7 @@ export const fetchPosts = async (
     const { data, error } = await supabase
         .from("posts")
         .select(
-            "*, group:groups(*), user: users!posts_user_id_fkey(*), upvotes(value.sum()), nr_of_comments:comments(count)",
+            "*, group:groups(*), upvotes(value.sum()), nr_of_comments:comments(count)",
         )
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
