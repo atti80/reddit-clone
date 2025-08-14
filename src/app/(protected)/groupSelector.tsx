@@ -11,19 +11,42 @@ import {
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { router } from "expo-router";
 import { useState } from "react";
-import groups from '../../../assets/data/groups.json';
+// import groups from "../../../assets/data/groups.json";
 import { selectedGroupAtom } from "../../atoms";
 import { useSetAtom } from "jotai";
-import { Group } from '../../types';
+// import { Group } from "../../types";
+import { useQuery } from "@tanstack/react-query";
+import { fetchGroups } from "../../services/groupService";
+import { Tables } from "../../types/database.types";
+import { useSupabase } from "../../lib/supabase";
 
-export default function groupSelector() {
+type Group = Tables<"groups">;
+
+export default function GroupSelector() {
     const [searchValue, setSearchValue] = useState<string>("");
     const setGroup = useSetAtom(selectedGroupAtom);
+
+    const supabase = useSupabase();
+
+    const { data, isLoading, error } = useQuery({
+        queryKey: ["groups", { searchValue }],
+        queryFn: () => fetchGroups(searchValue, supabase),
+        staleTime: 10_000,
+        placeholderData: (previousData) => previousData,
+    });
 
     const onGroupSelected = (group: Group) => {
         setGroup(group);
         router.back();
     };
+
+    if (isLoading) {
+        return <ActivityIndicator />;
+    }
+
+    if (error || !data) {
+        return <Text>Error fetching groups</Text>;
+    }
 
     return (
         <SafeAreaView style={{ marginHorizontal: 10, flex: 1 }}>
@@ -77,7 +100,7 @@ export default function groupSelector() {
             </View>
 
             <FlatList
-                data={groups.filter((group) => group.name.toLowerCase().includes(searchValue.toLowerCase()))}
+                data={data}
                 renderItem={({ item }) => (
                     <Pressable
                         onPress={() => onGroupSelected(item)}

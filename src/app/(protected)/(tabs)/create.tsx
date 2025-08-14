@@ -8,26 +8,91 @@ import {
     TextInput,
     KeyboardAvoidingView,
     Platform,
-    ScrollView
+    ScrollView,
+    Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
+
+
 import { selectedGroupAtom } from "../../../atoms";
 import { useAtom } from "jotai";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSupabase } from "../../../lib/supabase";
+
+import { insertPost } from "../../../services/postService";
 
 export default function CreateScreen() {
     const [title, setTitle] = useState<string>("");
     const [bodyText, setBodyText] = useState<string>("");
     const [image, setImage] = useState<string | null>(null);
+
     const [group, setGroup] = useAtom(selectedGroupAtom);
 
+    const queryClient = useQueryClient();
+    const supabase = useSupabase();
+
+    const { mutate, isPending } = useMutation({
+        mutationFn: (image: string | undefined) => {
+            if (!group) {
+                throw new Error("Please select a group");
+            }
+            if (!title) {
+                throw new Error("Title is required");
+            }
+
+            return insertPost(
+                {
+                    title,
+                    description: bodyText,
+                    group_id: group.id,
+                    image,
+                    user_id: '35609419-fb15-47ce-9d52-818de51d082b'
+                },
+                supabase
+            );
+        },
+        onSuccess: (data) => {
+            // invalidate queries that might have been affected by inserting a post
+            queryClient.invalidateQueries({ queryKey: ["posts"] });
+
+            goBack();
+        },
+        onError: (error) => {
+            console.log(error);
+            Alert.alert("Failed to insert post", error.message);
+        },
+    });
+
+    const onPostClick = async () => {
+        // let imagePath = image ? await uploadImage(image, supabase) : undefined;
+
+        // mutate(imagePath);
+        mutate('');
+    };
+
     const goBack = () => {
-        setTitle('');
-        setBodyText('');
+        setTitle("");
+        setBodyText("");
         setGroup(null);
         router.back();
-    }
+    };
+
+    const pickImage = async () => {
+        // No permissions request is necessary for launching the image library
+        // let result = await ImagePicker.launchImageLibraryAsync({
+        //     mediaTypes: ["images"],
+        //     allowsEditing: true,
+        //     quality: 1,
+        // });
+
+        // console.log(result);
+
+        // if (!result.canceled) {
+        //     setImage(result.assets[0].uri);
+        // }
+    };
 
     return (
         <SafeAreaView
@@ -42,11 +107,12 @@ export default function CreateScreen() {
                     onPress={() => goBack()}
                 />
                 <Pressable
-                    onPress={() => console.error('Pressed')}
+                    onPress={() => onPostClick()}
                     style={{ marginLeft: "auto" }}
+                    disabled={isPending}
                 >
                     <Text style={styles.postText}>
-                        Post
+                        {isPending ? "Posting..." : "Post"}
                     </Text>
                 </Pressable>
             </View>
@@ -125,7 +191,7 @@ export default function CreateScreen() {
                 {/* FOOTER */}
                 <View style={{ flexDirection: "row", gap: 20, padding: 10 }}>
                     <Feather name="link" size={20} color="black" />
-                    <Feather name="image" size={20} color="black" />
+                    <Feather name="image" size={20} color="black" onPress={pickImage} />
                     <Feather name="youtube" size={20} color="black" />
                     <Feather name="list" size={20} color="black" />
                 </View>
