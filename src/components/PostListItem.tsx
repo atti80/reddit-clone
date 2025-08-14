@@ -1,13 +1,21 @@
 import { Image, Pressable, Text, View, StyleSheet } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Post } from '../types';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Link } from 'expo-router';
+import { Tables } from '../types/database.types';
+import { fetchPosts } from '../services/postService';
+
+type Post = Awaited<ReturnType<typeof fetchPosts>>[number];
+// type Post = Tables<"posts"> & {
+//     // user: Tables<"users">;
+//     group: Tables<"groups">;
+//     upvotes: { sum: number }[];
+// };
 
 type PostListItemProps = {
     post: Post;
     isDetailedPost?: boolean;
-}
+};
 
 export default function PostListItem({ post, isDetailedPost }: PostListItemProps) {
     const showDescription = isDetailedPost || !post.image;
@@ -21,7 +29,7 @@ export default function PostListItem({ post, isDetailedPost }: PostListItemProps
                     <View>
                         <View style={{ flexDirection: 'row', gap: 5 }}>
                             <Text style={{ fontWeight: 'bold', fontSize: 13, color: '#3A3B3C' }}>{post.group.name}</Text>
-                            <Text style={{ color: 'grey', fontSize: 13, alignSelf: 'flex-start' }}>{formatDistanceToNowStrict(new Date(post.created_at))}</Text>
+                            {post.created_at && <Text style={{ color: 'grey', fontSize: 13, alignSelf: 'flex-start' }}>{formatDistanceToNowStrict(new Date(post.created_at))}</Text>}
                         </View>
                         {isDetailedPost && <Text style={{ fontSize: 13, color: '#2E5DAA' }}>{post.user.name}</Text>}
                     </View>
@@ -47,13 +55,13 @@ export default function PostListItem({ post, isDetailedPost }: PostListItemProps
                     <View style={{ flexDirection: 'row', gap: 10 }}>
                         <View style={[{ flexDirection: 'row' }, styles.iconBox]}>
                             <MaterialCommunityIcons name="arrow-up-bold-outline" size={19} color="black" />
-                            <Text style={{ fontWeight: '500', marginLeft: 5, alignSelf: 'center' }}>{post.upvotes}</Text>
+                            <Text style={{ fontWeight: '500', marginLeft: 5, alignSelf: 'center' }}>{post.upvotes[0].sum || 0}</Text>
                             <View style={{ width: 1, backgroundColor: '#D4D4D4', height: 14, marginHorizontal: 7, alignSelf: 'center' }} />
                             <MaterialCommunityIcons name="arrow-down-bold-outline" size={19} color="black" />
                         </View>
                         <View style={[{ flexDirection: 'row' }, styles.iconBox]}>
                             <MaterialCommunityIcons name="comment-outline" size={19} color="black" />
-                            <Text style={{ fontWeight: '500', marginLeft: 5, alignSelf: 'center' }}>{post.nr_of_comments}</Text>
+                            <Text style={{ fontWeight: '500', marginLeft: 5, alignSelf: 'center' }}>{post.nr_of_comments?.[0].count}</Text>
                         </View>
                     </View>
                     <View style={{ marginLeft: 'auto', flexDirection: 'row', gap: 10 }}>
