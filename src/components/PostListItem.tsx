@@ -8,7 +8,7 @@ import { useSupabase } from "../lib/supabase";
 import { createUpvote, selectMyVote } from "../services/upvotesService";
 import { useSession } from "@clerk/clerk-expo";
 import { fetchPosts } from '../services/postService';
-// import SupabaseImage from "./SupabaseImage";
+import SupabaseImage from "./SupabaseImage";
 
 // type Post = Tables<"posts"> & {
 // user: Tables<"users">;
@@ -112,13 +112,13 @@ export default function PostListItem({
                 <Text style={{ fontWeight: "bold", fontSize: 17, letterSpacing: 0.5 }}>
                     {post.title}
                 </Text>
-                {/* {shouldShowImage && post.image && (
+                {shouldShowImage && post.image && (
                     <SupabaseImage
                         path={post.image}
                         bucket="images"
                         style={{ width: "100%", aspectRatio: 4 / 3, borderRadius: 15 }}
                     />
-                )} */}
+                )}
 
                 {shouldShowDescription && post.description && (
                     <Text numberOfLines={isDetailedPost ? undefined : 4}>

@@ -14,12 +14,13 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
-
+import * as ImagePicker from "expo-image-picker";
 
 import { selectedGroupAtom } from "../../../atoms";
 import { useAtom } from "jotai";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSupabase } from "../../../lib/supabase";
+import { uploadImage } from "../../../utils/supabaseImages";
 
 import { insertPost } from "../../../services/postService";
 
@@ -65,10 +66,9 @@ export default function CreateScreen() {
     });
 
     const onPostClick = async () => {
-        // let imagePath = image ? await uploadImage(image, supabase) : undefined;
+        let imagePath = image ? await uploadImage(image, supabase) : undefined;
 
-        // mutate(imagePath);
-        mutate('');
+        mutate(imagePath);
     };
 
     const goBack = () => {
@@ -80,17 +80,17 @@ export default function CreateScreen() {
 
     const pickImage = async () => {
         // No permissions request is necessary for launching the image library
-        // let result = await ImagePicker.launchImageLibraryAsync({
-        //     mediaTypes: ["images"],
-        //     allowsEditing: true,
-        //     quality: 1,
-        // });
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            quality: 1,
+        });
 
         // console.log(result);
 
-        // if (!result.canceled) {
-        //     setImage(result.assets[0].uri);
-        // }
+        if (!result.canceled) {
+            setImage(result.assets[0].uri);
+        }
     };
 
     return (
